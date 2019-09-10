@@ -1,27 +1,27 @@
 setwd(dirname(rstudioapi::getSourceEditorContext()$path))  #for R-studio
+
+
+# Load libraries ----------------------------------------------------------
+
 rm(list = ls())
 graphics.off()
 library(ggplot2)
 
+# Computations and Distributions ------------------------------------------
+
 eps <- 1e-3
-
 dtheta <- 0.001
-
 theta <- seq(from = eps, to = 1-eps, by = dtheta)
-
 alpha <- 21
-
 beta <- 5
-
 likelihood <- choose(alpha+beta-2, alpha -1)*theta^(alpha-1)*(1-theta)^(beta-1)
-
 likelihood_pdf <- dbeta(theta, alpha, beta, ncp = 0, log = FALSE)
-
 noninform1 <- dbeta(theta, 1, 1, ncp = 0, log = FALSE)
-
 noninform2 <- dbeta(theta, 1/2, 1, ncp = 0, log = FALSE)
-
 noninform3 <- dbeta(theta, 3/2, 1 , ncp = 0, log = FALSE)
+
+
+# Plot Likelihood ---------------------------------------------------------
 
 p1 = ggplot()+
   geom_line(aes(x = theta, y = likelihood_pdf), color = "black")+
@@ -32,6 +32,10 @@ p1 = ggplot()+
         axis.text.y = element_text(size = 14), 
         panel.border = element_rect(colour = "black", fill=NA, size=1))
 p1
+
+
+
+# Plot First Prior --------------------------------------------------------
 
 
 p2 = ggplot()+
@@ -47,6 +51,10 @@ p2 = ggplot()+
 p2
 
 
+
+# Plot second Prior -------------------------------------------------------
+
+
 p3 = ggplot()+
   geom_line(aes(x = theta, y = likelihood_pdf), color = "black")+
   geom_area(aes(x = theta, y = likelihood_pdf ),  alpha = 0.1)+
@@ -58,6 +66,10 @@ p3 = ggplot()+
         axis.text.y = element_text(size = 14), 
         panel.border = element_rect(colour = "black", fill=NA, size=1))
 p3
+
+
+
+# Plot third prior --------------------------------------------------------
 
 
 p3 = ggplot()+
@@ -79,7 +91,10 @@ p3
 
 
 
-#posteriors...
+
+# Plot posteriors + priors ------------------------------------------------
+
+
 p4 = ggplot()+
   #geom_point(aes(x = z, y = f21), shape = 21, color = "black", fill = "black", size = 4, alpha = 0.5)+
   #geom_point(aes(x = z, y = f22), shape = 21, color = "black",  fill = "blue", size  = 4, alpha = 0.5) +
@@ -99,6 +114,11 @@ p4 = ggplot()+
         panel.border = element_rect(colour = "black", fill=NA, size=1))
 p4
 
+
+
+# Plot posteriors (zoom in) -----------------------------------------------
+
+
 p5 = ggplot()+
   geom_area(aes(x = theta, y = likelihood_pdf), fill = "black",  alpha = 0.05)+
   geom_line(aes(x = theta, y= dbeta(theta, 21,5)), color = "black", size = 0.8) +
@@ -115,14 +135,7 @@ p5
 
 
 
-
-
-
-
-
-
-
-
+# Compute predictive - Binomial -------------------------------------------
 
 
 N <- 30
@@ -137,6 +150,12 @@ f11 <- choose(N, z)*beta(a[1] + x + z, b[1] + n - x + N - z)/ beta(a[1] + x, b[1
 f12 <- choose(N, z)*beta(a[2] + x + z, b[2] + n - x + N - z)/ beta(a[2] + x, b[2] + n - x)
 f13 <- choose(N, z)*beta(a[3] + x + z, b[3] + n - x + N - z)/ beta(a[3] + x, b[3] + n - x)
 #df = data.frame(x_ax = rep(z, 3), vals = c(f11, f12, f13), cols = c(rep("black", N+1), c(rep("blue", N+1)), c(rep("red", N+1))))
+
+
+
+# Plot predictive - Binomial ----------------------------------------------
+
+
 p6 = ggplot()+
   geom_point(aes(x = z, y = f11), shape = 21, color = "black", fill = "black", size = 4, alpha = 0.5)+
   geom_point(aes(x = z, y = f12), shape = 21, color = "black",  fill = "blue", size  = 4, alpha = 0.5) +
@@ -148,10 +167,20 @@ p6 = ggplot()+
         panel.border = element_rect(colour = "black", fill=NA, size=1))
 p6
 
+
+
+# Compute predictive - Negative Binomial ----------------------------------
+
+
 z2 <- seq(from = 0, to = 200, by = 1)  
 f21 <- choose(R+z2-1, R-1)*beta(a[1] + x + z2, b[1] + r + R)/ beta(a[1] + x, b[1] + r)
 f22 <- choose(R+z2-1, R-1)*beta(a[2] + x + z2, b[1] + r + R)/ beta(a[2] + x, b[2] + r)
 f23 <- choose(R+z2-1, R-1)*beta(a[3] + x + z2, b[1] + r + R)/ beta(a[3] + x, b[3] + r)
+
+
+
+# Plot predictive - Negative Binomial -------------------------------------
+
 
 p7 = ggplot()+
   geom_point(aes(x = z2, y = f21), shape = 21, color = "black", fill = "black", size = 4, alpha = 0.5)+
@@ -167,6 +196,11 @@ p7 = ggplot()+
         panel.border = element_rect(colour = "black", fill=NA, size=1))
 p7
 
+
+
+# Plot predictive - Negative Binomial (zoom out) --------------------------
+
+
 p8 = ggplot()+
   geom_line(aes(x = z2, y= f21), color = "black", size = 0.8) +
   geom_line(aes(x = z2, y= f22), color = "blue", size = 0.8) +
@@ -178,6 +212,11 @@ p8 = ggplot()+
 p8
 
 
+
+
+# Plot predictive - Binomial - MLE ----------------------------------------
+
+
 theta_hat_1 = (alpha-1+a[1]-1)/(alpha-1 + a[1] -1  +beta -1 + b[1]-1)
 pr_1 = choose(N, z) * theta_hat_1^z * (1-theta_hat_1)^(N-z)
 
@@ -185,15 +224,28 @@ p9  = p6 +  geom_point(aes(x = z, y = pr_1), shape = 21, color = "black", fill =
 p9
 
 
+
+# Plot predictive - Negative Binomial - MLE (zoom out) --------------------
+
+
 pr_2 = choose(R + z2 -1, R-1) * theta_hat_1^z2* (1-theta_hat_1)^R
 p10  = p8 + geom_line(aes(x = z2, y= pr_2), color = "green", size = 0.8) 
 p10
+
+
+
+# Plot predictive - Negative Binomial (zoom in) ---------------------------
+
 
 p11 = p7 + geom_point(aes(x = z2, y = pr_2), shape = 21, color = "black", fill = "green", size = 4, alpha = 0.5)
 p11
 
 
-#### exp values and variances 
+
+
+# Computations and Bayes Factor -------------------------------------------
+
+
 a1 <- alpha -1 + a[1]
 a2 <- alpha -1 + a[2]
 a3 <- alpha -1 + a[3]
@@ -250,6 +302,18 @@ bf13 <- th0^x*(1-th0)^(n-x) * beta(a[3], b[3]) / beta(a[3] + x, b[3] + n - x)
 bf11
 bf12
 bf13
+
+
+
+
+
+
+# Gap ---------------------------------------------------------------------
+
+
+
+
+
 
 
 
